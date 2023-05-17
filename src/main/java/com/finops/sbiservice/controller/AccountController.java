@@ -1,6 +1,7 @@
 package com.finops.sbiservice.controller;
 
 import com.finops.sbiservice.domain.Account;
+import com.finops.sbiservice.domain.BankTransferRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -77,7 +78,7 @@ public class AccountController {
     }
 
     @PostMapping("/update-account")
-    public Account updateAccountNumber(@RequestParam String aadharNumber, @RequestParam String mobileNumber){
+    public Account updateMobileNumber(@RequestParam String aadharNumber, @RequestParam String mobileNumber){
 
         Criteria criteria = Criteria.where("aadharNumber").is(aadharNumber);
         Query query = new Query(criteria);
@@ -152,8 +153,6 @@ public class AccountController {
             update.set("closingBalance", account.getClosingBalance());
         }
 
-
-
         Account updatedAccount = mongoTemplate.findAndModify(query,
                 update,
                 new FindAndModifyOptions().returnNew(true),
@@ -163,6 +162,53 @@ public class AccountController {
         return updatedAccount;
 
     }
+
+    @PostMapping("/transfer")
+    public String transferAmount(@RequestBody BankTransferRequest bankTransferRequest){
+
+        if(bankTransferRequest.getFromAadharNumber().isEmpty()){
+            return "From AccountNumber is mandatory";
+        }
+
+        if(bankTransferRequest.getToAadharNumber().isEmpty()){
+            return "To account Number is mandatory";
+        }
+
+        if(bankTransferRequest.getAmountTobeTransferred()==0){
+            return "amount should be more than zero";
+        }
+
+        if(bankTransferRequest.getBeneficiaryName().isEmpty()){
+            return "beneficiary name is mandatory";
+        }
+
+        if(bankTransferRequest.getIfscCode().isEmpty()){
+            return "IFSC Code is mandatory";
+        }
+
+        Criteria fromCriteria = Criteria.where("aadharNumber").is(bankTransferRequest.getFromAadharNumber());
+        Query fromQuery = new Query(fromCriteria);
+
+        Account fromAccount = mongoTemplate.findOne(fromQuery, Account.class, "Accounts");
+        Update fromUpdate = new Update();
+        fromUpdate.set("closingBalance", fromAccount.getClosingBalance() - bankTransferRequest.getAmountTobeTransferred());
+
+        Account updatedFromAccount = mongoTemplate.findAndModify(fromQuery, fromUpdate,new FindAndModifyOptions().returnNew(true), Account.class, "Accounts");
+
+        Criteria toCriteria = Criteria.where("aadharNumber").is(bankTransferRequest.getToAadharNumber());
+        Query toQuery = new Query(toCriteria);
+        Account toAccount = mongoTemplate.findOne(toQuery, Account.class, "Accounts");
+        Update toUpdate = new Update();
+        toUpdate.set("closingBalance", toAccount.getClosingBalance() + bankTransferRequest.getAmountTobeTransferred());
+
+        Account updatedToAccount = mongoTemplate.findAndModify(toQuery, toUpdate, new FindAndModifyOptions().returnNew(true),Account.class, "Accounts");
+
+        return "Amount "+bankTransferRequest.getAmountTobeTransferred()
+                +" is succesfully transferred to "+updatedToAccount.getFirstName()
+                + " and the available balance is "+updatedFromAccount.getClosingBalance();
+
+    }
+
 //    CRUD
 //    C--> Create
 //    R --> Read
@@ -241,4 +287,13 @@ public class AccountController {
         "openingBalance": 0,
         "panCardNumber": "",
         "smsAlertsRequired": true
+        }*/
+
+/*
+{
+        "amountTobeTransferred": 10,
+        "beneficiaryName": "Teja",
+        "fromAadharNumber": "987654321654",
+        "ifscCode": "HDFC7t7887",
+        "toAadharNumber": "98765432190"
         }*/
