@@ -41,6 +41,5 @@ public class MongoConfig {
         return new MongoTemplate(mongoClient(), "SBI");
     }
 
-
 }
 
