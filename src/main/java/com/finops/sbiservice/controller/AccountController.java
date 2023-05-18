@@ -208,6 +208,17 @@ public class AccountController {
                 + " and the available balance is "+updatedFromAccount.getClosingBalance();
 
     }
+    @DeleteMapping("/delete-account")
+    public Account deleteAccount(@RequestParam String aadharNumber){
+        Criteria criteria = Criteria.where("aadharNumber").is(aadharNumber);
+        Query query =new Query(criteria);
+        query.fields().exclude("id");
+
+        Account deletedAccount = mongoTemplate.findAndRemove(query, Account.class, "Accounts");
+
+        return deletedAccount;
+
+    }
 
 //    CRUD
 //    C--> Create
