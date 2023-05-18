@@ -291,9 +291,15 @@ public class AccountController {
 
 /*
 {
-        "amountTobeTransferred": 10,
+        "amountTobeTransferred-1": 10,
         "beneficiaryName": "Teja",
         "fromAadharNumber": "987654321654",
         "ifscCode": "HDFC7t7887",
         "toAadharNumber": "98765432190"
         }*/
+
+
+
+
+
+
