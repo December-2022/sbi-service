@@ -1,1 +1,8 @@
 GIT: It is a version control system.
+
+
+GIT Clone -> for the first time
+
+GIT Commit -> commit the files
+GIT push -> For pushing to remote repo
+GIT PUll-> for updating the project
